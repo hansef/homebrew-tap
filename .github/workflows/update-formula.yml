@@ -1,0 +1,116 @@
+name: Update Formula
+
+# Generic workflow to update any formula in this tap
+# Triggered by repository_dispatch from source repos
+
+on:
+  repository_dispatch:
+    types: [update-formula]
+  workflow_dispatch:
+    inputs:
+      formula:
+        description: 'Formula name (e.g., slack-summarizer)'
+        required: true
+        type: string
+      tag:
+        description: 'Release tag (e.g., v1.2.0)'
+        required: true
+        type: string
+      version:
+        description: 'Version without v prefix (e.g., 1.2.0)'
+        required: true
+        type: string
+      repository:
+        description: 'Source repository (e.g., hansef/slack-summarizer)'
+        required: true
+        type: string
+      sha256:
+        description: 'SHA256 of the release tarball'
+        required: true
+        type: string
+      tarball:
+        description: 'Tarball filename (e.g., slack-summarizer-macos-arm64.tar.gz)'
+        required: true
+        type: string
+
+jobs:
+  update-formula:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout tap repository
+        uses: actions/checkout@v4
+
+      - name: Set variables
+        id: vars
+        run: |
+          if [ "${{ github.event_name }}" = "repository_dispatch" ]; then
+            echo "formula=${{ github.event.client_payload.formula }}" >> $GITHUB_OUTPUT
+            echo "tag=${{ github.event.client_payload.tag }}" >> $GITHUB_OUTPUT
+            echo "version=${{ github.event.client_payload.version }}" >> $GITHUB_OUTPUT
+            echo "repository=${{ github.event.client_payload.repository }}" >> $GITHUB_OUTPUT
+            echo "sha256=${{ github.event.client_payload.sha256 }}" >> $GITHUB_OUTPUT
+            echo "tarball=${{ github.event.client_payload.tarball }}" >> $GITHUB_OUTPUT
+          else
+            echo "formula=${{ github.event.inputs.formula }}" >> $GITHUB_OUTPUT
+            echo "tag=${{ github.event.inputs.tag }}" >> $GITHUB_OUTPUT
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+            echo "repository=${{ github.event.inputs.repository }}" >> $GITHUB_OUTPUT
+            echo "sha256=${{ github.event.inputs.sha256 }}" >> $GITHUB_OUTPUT
+            echo "tarball=${{ github.event.inputs.tarball }}" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Verify formula exists
+        run: |
+          FORMULA="${{ steps.vars.outputs.formula }}"
+          if [ ! -f "Formula/${FORMULA}.rb" ]; then
+            echo "Error: Formula/${FORMULA}.rb not found"
+            exit 1
+          fi
+
+      - name: Update formula
+        run: |
+          FORMULA="${{ steps.vars.outputs.formula }}"
+          TAG="${{ steps.vars.outputs.tag }}"
+          VERSION="${{ steps.vars.outputs.version }}"
+          REPO="${{ steps.vars.outputs.repository }}"
+          SHA256="${{ steps.vars.outputs.sha256 }}"
+          TARBALL="${{ steps.vars.outputs.tarball }}"
+
+          DOWNLOAD_URL="https://github.com/${REPO}/releases/download/${TAG}/${TARBALL}"
+
+          echo "Updating Formula/${FORMULA}.rb"
+          echo "  Version: ${VERSION}"
+          echo "  URL: ${DOWNLOAD_URL}"
+          echo "  SHA256: ${SHA256}"
+
+          # Update url
+          sed -i "s|url \".*\"|url \"${DOWNLOAD_URL}\"|" "Formula/${FORMULA}.rb"
+
+          # Update sha256
+          sed -i "s|sha256 \".*\"|sha256 \"${SHA256}\"|" "Formula/${FORMULA}.rb"
+
+          # Update version
+          sed -i "s|version \".*\"|version \"${VERSION}\"|" "Formula/${FORMULA}.rb"
+
+          echo ""
+          echo "Updated formula:"
+          grep -E "(url|sha256|version)" "Formula/${FORMULA}.rb" | head -5
+
+      - name: Setup Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Commit and push
+        run: |
+          FORMULA="${{ steps.vars.outputs.formula }}"
+          TAG="${{ steps.vars.outputs.tag }}"
+
+          git add "Formula/${FORMULA}.rb"
+          git diff --cached --quiet && echo "No changes to commit" && exit 0
+
+          git commit -m "Update ${FORMULA} to ${TAG}"
+          git push

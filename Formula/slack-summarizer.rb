@@ -10,6 +10,10 @@ class SlackSummarizer < Formula
   depends_on arch: :arm64
   depends_on "node@20"
 
+  # Skip relinking native .node binaries (better-sqlite3, etc.)
+  # These are pre-built for the target architecture and don't need modification
+  skip_clean :all
+
   def install
     # Pre-built tarball includes dist/, node_modules/, and package.json
     libexec.install Dir["*"]

@@ -29,28 +29,28 @@ class SlackSummarizer < Formula
     <<~EOS
       Slack Summarizer has been installed!
 
-      FIRST-TIME SETUP
-      ────────────────
-      Run the interactive configuration wizard:
-        $ slack-summarizer configure
+      GETTING STARTED
+      ───────────────
+      Just run:
+        $ slack-summarizer
+
+      The interactive TUI will guide you through setup on first run.
 
       You'll need:
-        - Slack user token (xoxp-...) from your Slack workspace
+        - Slack user token (xoxp-...) from your Slack app
         - Anthropic API key (sk-ant-...) from console.anthropic.com
+          OR Claude OAuth token (for Pro/Max subscribers)
 
-      CONFIGURATION
-      ─────────────
-      Config file: ~/.config/slack-summarizer/config.toml
+      BATCH MODE
+      ──────────
+      For scripting or CI/CD, use batch mode:
+        $ slack-summarizer --batch
 
-      You can also use environment variables:
+      Or set environment variables:
         export SLACK_USER_TOKEN="xoxp-..."
         export ANTHROPIC_API_KEY="sk-ant-..."
 
-      QUICK START
-      ───────────
-      1. Configure: slack-summarizer configure
-      2. Test: slack-summarizer test-connection
-      3. Summarize: slack-summarizer summarize
+      Config file: ~/.config/slack-summarizer/config.toml
 
       DOCUMENTATION
       ─────────────

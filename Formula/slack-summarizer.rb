@@ -1,9 +1,9 @@
 class SlackSummarizer < Formula
   desc "Comprehensive Slack activity summarization CLI"
   homepage "https://github.com/hansef/slack-summarizer"
-  url "https://github.com/hansef/slack-summarizer/releases/download/v1.1.7/slack-summarizer-macos-arm64.tar.gz"
-  sha256 "905729b03d51dc521c9f698779a038cba23d3c15a0afdf2261f4e82c325b0881"
-  version "1.1.7"
+  url "https://github.com/hansef/slack-summarizer/releases/download/v1.1.8/slack-summarizer-macos-arm64.tar.gz"
+  sha256 "d35d58d62191b82b0c0c8c8901242901c2d8e09ccbd2e20e1ee19b0e675db8de"
+  version "1.1.8"
   license "MIT"
 
   depends_on :macos
